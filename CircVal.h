@@ -34,16 +34,16 @@
         static constexpr double R  = ((_H)-(_L));   /* range        */  \
         static constexpr double R_2= ((_H)-(_L))/2.;/* half range   */  \
                                                                         \
-        static_assert((_H>_L) && (_Z>=_L) && (_Z<_H),                   \
+        static_assert(((_H)>(_L)) && ((_Z)>=(_L)) && ((_Z)<(_H)),       \
             #_Name": Range not valid");                                 \
     };
 
 // ==========================================================================
 // define basic circular-value types
-CircValTypeDef(SignedDegRange  ,             -180.,               180.,  0. )
-CircValTypeDef(UnsignedDegRange,                0.,               360.,  0. )
-CircValTypeDef(SignedRadRange  , -std::numbers::pi,   std::numbers::pi,  0. )
-CircValTypeDef(UnsignedRadRange,                0., 2*std::numbers::pi,  0. )
+CircValTypeDef(SignedDegRange  ,             -180.,                  180.,  0.0)
+CircValTypeDef(UnsignedDegRange,                0.,                  360.,  0.0)
+CircValTypeDef(SignedRadRange  , -std::numbers::pi,      std::numbers::pi,  0.0)
+CircValTypeDef(UnsignedRadRange,                0., 2.0*(std::numbers::pi), 0.0)
 
 // for testing only, define some additional circular-value types
 CircValTypeDef(TestRange0      ,    3.,    10.,  5.3)
