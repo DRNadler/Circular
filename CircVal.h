@@ -40,10 +40,10 @@
 
 // ==========================================================================
 // define basic circular-value types
-CircValTypeDef(SignedDegRange  ,             -180.,                  180.,  0.0)
-CircValTypeDef(UnsignedDegRange,                0.,                  360.,  0.0)
+CircValTypeDef(SignedDegRange  ,            -180.0,                  180.,  0.0)
+CircValTypeDef(UnsignedDegRange,               0.0,                  360.,  0.0)
 CircValTypeDef(SignedRadRange  , -std::numbers::pi,      std::numbers::pi,  0.0)
-CircValTypeDef(UnsignedRadRange,                0., 2.0*(std::numbers::pi), 0.0)
+CircValTypeDef(UnsignedRadRange,               0.0, 2.0*(std::numbers::pi), 0.0)
 
 // for testing only, define some additional circular-value types
 CircValTypeDef(TestRange0      ,    3.,    10.,  5.3)
@@ -53,7 +53,7 @@ CircValTypeDef(TestRange3      ,  -13.,    -3., -5.3)
 
 // ==========================================================================
 // circular value
-// Type should be defined using the CircValTypeDef macro
+// Type must be defined using the CircValTypeDef macro
 template <typename Type>
 class CircVal
 {
