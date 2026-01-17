@@ -8,7 +8,7 @@
 
 // DRNadler 17-Jan-2026: Replace CircValTypeDef macro with CircValType template.
 
-// DRNadler  2-Jan-2026: Deprecate float equality operators, and suppress GCC warning->error.
+// LK   2-Jan-2026: Replace FP comparison (==) with std::equal_to to avoid triggering -Wfloat-equal
 
 // DRNadler 31-Jan-2025: For better portability, replace M_PI with C++ 2020 std::numbers::pi
 
@@ -74,20 +74,20 @@ public:
     // ---------------------------------------------
     inline static bool IsInRange(double r)
     {
-        return (r>=Type::L && r<Type::H);
+        return (r >= Type::L && r < Type::H);
     }
 
     // 'wraps' circular-value to [Type::L,Type::H)
     inline static double Wrap(double r)
     {
         // the next lines are for optimization and improved accuracy only
-        if (r>=Type::L)
+        if (r >= Type::L)
         {
-                 if (r< Type::H        ) return r        ;
-            else if (r< Type::H+Type::R) return r-Type::R;
+                 if (r <  Type::H        ) return r        ;
+            else if (r <  Type::H+Type::R) return r-Type::R;
         }
         else
-                 if (r>=Type::L-Type::R) return r+Type::R;
+                 if (r >= Type::L-Type::R) return r+Type::R;
 
         // general case
         return Mod(r - Type::L, Type::R) + Type::L;
@@ -98,7 +98,7 @@ public:
     // return value is in [-Type::R/2, Type::R/2)
     inline static double Sdist(const CircVal& c1, const CircVal& c2)
     {
-        double d= c2.val-c1.val;
+        double d = c2.val-c1.val;
         if (d <  -Type::R_2) { return d + Type::R; };
         if (d >=  Type::R_2) { return d - Type::R; };
                              { return d          ; };
@@ -108,7 +108,7 @@ public:
     // return value is in [0, Type::R)
     inline static double Pdist(const CircVal& c1, const CircVal& c2)
     {
-        return c2.val>=c1.val ? c2.val-c1.val : Type::R-c1.val+c2.val;
+        return c2.val >= c1.val ? c2.val-c1.val : Type::R-c1.val+c2.val;
     }
 
     // ---------------------------------------------
@@ -147,7 +147,7 @@ public:
     // to translate a floating-point such that 0 is mapped to Type::Z, call ToC()
     CircVal& operator= (double r)
     {
-        val= Wrap(r);
+        val = Wrap(r);
         return *this;
     }
 
@@ -155,7 +155,7 @@ public:
     template<typename Type2>
     CircVal& operator= (const CircVal<Type2>& c)
     {
-        val= Wrap(c.Pdist(c.GetZ(), c) * Type::R/Type2::R + Type::Z);
+        val = Wrap(c.Pdist(c.GetZ(), c) * Type::R/Type2::R + Type::Z);
         return *this;
     }
 
@@ -164,39 +164,30 @@ public:
     friend double ToR(const CircVal& c) { return c.val - Type::Z; }
 
     // ---------------------------------------------
-    const CircVal  operator+ (                ) const { return val;                                            }
-    const CircVal  operator- (                ) const { return Wrap(Type::Z-Sdist(Type::Z,val));               } // return negative circular value
-    const CircVal  operator~ (                ) const { return Wrap(val+Type::R_2             );               } // return opposite circular-value
+    const CircVal  operator+ (                ) const { return val;                                               }
+    const CircVal  operator- (                ) const { return Wrap(Type::Z - Sdist(Type::Z, val));               } // return negative circular value
+    const CircVal  operator~ (                ) const { return Wrap(val + Type::R_2              );               } // return opposite circular-value
 
-    const CircVal  operator+ (const CircVal& c) const { return Wrap(val+c.val        - Type::Z);               }
-    const CircVal  operator- (const CircVal& c) const { return Wrap(val-c.val        + Type::Z);               }
-    const CircVal  operator* (const double&  r) const { return Wrap((val-Type::Z)*r  + Type::Z);               }
-    const CircVal  operator/ (const double&  r) const { return Wrap((val-Type::Z)/r  + Type::Z);               }
+    const CircVal  operator+ (const CircVal& c) const { return Wrap(val + c.val         - Type::Z);               }
+    const CircVal  operator- (const CircVal& c) const { return Wrap(val - c.val         + Type::Z);               }
+    const CircVal  operator* (const double&  r) const { return Wrap((val - Type::Z) * r + Type::Z);               }
+    const CircVal  operator/ (const double&  r) const { return Wrap((val - Type::Z) / r + Type::Z);               }
 
-          CircVal& operator+=(const CircVal& c)       { val= Wrap(val+c.val          - Type::Z); return *this; }
-          CircVal& operator-=(const CircVal& c)       { val= Wrap(val-c.val          + Type::Z); return *this; }
-          CircVal& operator*=(const double&  r)       { val= Wrap((val-Type::Z)*r    + Type::Z); return *this; }
-          CircVal& operator/=(const double&  r)       { val= Wrap((val-Type::Z)/r    + Type::Z); return *this; }
+          CircVal& operator+=(const CircVal& c)       { val = Wrap(val + c.val          - Type::Z); return *this; }
+          CircVal& operator-=(const CircVal& c)       { val = Wrap(val - c.val          + Type::Z); return *this; }
+          CircVal& operator*=(const double&  r)       { val = Wrap((val - Type::Z) * r  + Type::Z); return *this; }
+          CircVal& operator/=(const double&  r)       { val = Wrap((val - Type::Z) / r  + Type::Z); return *this; }
 
-          CircVal& operator =(const CircVal& c)       { val= c.val                             ; return *this; }
-    #ifdef __GNUC__
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wfloat-equal"
-    #endif
-    [[deprecated("Equality comparison of float types is risky; only use if checking exact 0 or identically calcd values.")]]
-    bool           operator==(const CircVal& c) const { return val == c.val;                                   }
-    [[deprecated("Equality comparison of float types is risky; only use if checking exact 0 or identically calcd values.")]]
-    bool           operator!=(const CircVal& c) const { return val != c.val;                                   }
-    #ifdef __GNUC__
-        #pragma GCC diagnostic pop
-    #endif
-
+          CircVal& operator =(const CircVal& c)       { val = c.val                               ; return *this; }
+          bool     operator==(const CircVal& c) const { return std::equal_to<decltype(val)>{}(val, c.val);        } // std::equal_to instead of == to avoid triggering -Wfloat-equal
+          bool     operator!=(const CircVal& c) const { return !(*this == c);                                     }
+    
     // note that two circular values can be compared in several different ways.
     // check carefully if this is really what you need!
-    bool           operator> (const CircVal& c) const { return val >  c.val;                                   }
-    bool           operator>=(const CircVal& c) const { return val >= c.val;                                   }
-    bool           operator< (const CircVal& c) const { return val <  c.val;                                   }
-    bool           operator<=(const CircVal& c) const { return val <= c.val;                                   }
+    bool           operator> (const CircVal& c) const { return val >  c.val;                                      }
+    bool           operator>=(const CircVal& c) const { return val >= c.val;                                      }
+    bool           operator< (const CircVal& c) const { return val <  c.val;                                      }
+    bool           operator<=(const CircVal& c) const { return val <= c.val;                                      }
 };
 
 // ==========================================================================
@@ -217,8 +208,8 @@ class CircValTester
     // check if 2 circular-values are almost equal
     inline static bool IsCircAlmostEq(const CircVal<Type>& c1, const CircVal<Type>& c2)
     {
-        double r1= c1;
-        double r2= c2;
+        double r1 = c1;
+        double r2 = c2;
 
         if (::IsAlmostEq(r1, r2))
             return true;
@@ -237,7 +228,7 @@ class CircValTester
 
     inline static void Test()
     {
-        CircVal<Type> ZeroVal= Type::Z;
+        CircVal<Type> ZeroVal = Type::Z;
 
         // --------------------------------------------------------
         AssertCircAlmostEq(ZeroVal       , -ZeroVal);
@@ -262,7 +253,7 @@ class CircValTester
         std::random_device rnd_device;
         rand_engine.seed(rnd_device()); // reseed engine
 
-        for (unsigned i= 10000; i--;)
+        for (unsigned i = 10000; i--;)
         {
             CircVal<Type> c1(c_uni_dist(rand_engine)); // random circular value
             CircVal<Type> c2(c_uni_dist(rand_engine)); // random circular value
@@ -320,18 +311,18 @@ class CircValTester
             AssertCircAlmostEq(atan<Type>(a2)                       , CircVal<SignedRadRange>(atan(a2))); // member func atan
 
             AssertCircAlmostEq(asin<Type>(a1) + asin<Type>(-a1)     , ZeroVal                          ); // asin(r)+asin(-r) = z
-            AssertCircAlmostEq(acos<Type>(a1) + acos<Type>(-a1)     , ToC<Type>(Type::R/2.)            ); // acos(r)+acos(-r) = r/2+z
-            AssertCircAlmostEq(asin<Type>(a1) + acos<Type>( a1)     , ToC<Type>(Type::R/4.)            ); // asin(r)+acos( r) = r/4+z
+            AssertCircAlmostEq(acos<Type>(a1) + acos<Type>(-a1)     , ToC<Type>(Type::R / 2.)          ); // acos(r)+acos(-r) = r/2+z
+            AssertCircAlmostEq(asin<Type>(a1) + acos<Type>( a1)     , ToC<Type>(Type::R / 4.)          ); // asin(r)+acos( r) = r/4+z
             AssertCircAlmostEq(atan<Type>(a2) + atan<Type>(-a2)     , ZeroVal                          ); // atan(r)+atan(-r) = z
 
             // --------------------------------------------------------
-            assert            (c1 >  c2                           ==    (c2 <  c1)                     ); // c1> c2 <==>   c2< c1
-            assert            (c1 >= c2                           ==    (c2 <= c1)                     ); // c1>=c2 <==>   c2<=c1
-            assert            (c1 >= c2                           ==  ( (c1 >  c2) ||  (c1 == c2))     ); // c1>=c2 <==>  (c1> c2)|| (c1==c2)
-            assert            (c1 <= c2                           ==  ( (c1 <  c2) ||  (c1 == c2))     ); // c1<=c2 <==>  (c1< c2)|| (c1==c2)
-            assert            (c1 >  c2                           ==  (!(c1 == c2) && !(c1 <  c2))     ); // c1> c2 <==> !(c1==c2)&&!(c1< c2)
-            assert            (c1 == c2                           ==  (!(c1 >  c2) && !(c1 <  c2))     ); // c1= c2 <==> !(c1> c2)&&!(c1< c2)
-            assert            (c1 <  c2                           ==  (!(c1 == c2) && !(c1 >  c2))     ); // c1< c2 <==> !(c1==c2)&&!(c1> c2)
+            assert            ((c1 >  c2)                         ==    (c2 <  c1)                     ); // c1> c2 <==>   c2< c1
+            assert            ((c1 >= c2)                         ==    (c2 <= c1)                     ); // c1>=c2 <==>   c2<=c1
+            assert            ((c1 >= c2)                         ==  ( (c1 >  c2) ||  (c1 == c2))     ); // c1>=c2 <==>  (c1> c2)|| (c1==c2)
+            assert            ((c1 <= c2)                         ==  ( (c1 <  c2) ||  (c1 == c2))     ); // c1<=c2 <==>  (c1< c2)|| (c1==c2)
+            assert            ((c1 >  c2)                         ==  (!(c1 == c2) && !(c1 <  c2))     ); // c1> c2 <==> !(c1==c2)&&!(c1< c2)
+            assert            ((c1 == c2)                         ==  (!(c1 >  c2) && !(c1 <  c2))     ); // c1= c2 <==> !(c1> c2)&&!(c1< c2)
+            assert            ((c1 <  c2)                         ==  (!(c1 == c2) && !(c1 >  c2))     ); // c1< c2 <==> !(c1==c2)&&!(c1> c2)
             assert            (!(c1>c2) || !(c2>c3) || (c1>c3)                                         ); // (c1>c2)&&(c2>c3) ==> c1>c3
 
             // --------------------------------------------------------
@@ -339,8 +330,8 @@ class CircValTester
             AssertCircAlmostEq(-c1                                  , ToC<Type>(ToR(-c1)       )       ); // -c1        = ToC(ToR(-c1)
             AssertCircAlmostEq(c1 + c2                              , ToC<Type>(ToR(c1)+ToR(c2))       ); // c1+c2      = ToC(ToR(c1)+ToR(c2))
             AssertCircAlmostEq(c1 - c2                              , ToC<Type>(ToR(c1)-ToR(c2))       ); // c1-c2      = ToC(ToR(c1)-ToR(c2))
-            AssertCircAlmostEq(c1 * r                               , ToC<Type>(ToR(c1)*r      )       ); // c1*r       = ToC(ToR(c1)*r      )
-            AssertCircAlmostEq(c1 / r                               , ToC<Type>(ToR(c1)/r      )       ); // c1/r       = ToC(ToR(c1)/r      )
+            AssertCircAlmostEq(c1 * r                               , ToC<Type>(ToR(c1) * r    )       ); // c1*r       = ToC(ToR(c1)*r      )
+            AssertCircAlmostEq(c1 / r                               , ToC<Type>(ToR(c1) / r    )       ); // c1/r       = ToC(ToR(c1)/r      )
 
             // --------------------------------------------------------
         }
