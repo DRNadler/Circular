@@ -6,11 +6,13 @@
 // CircValTester      - tester for CircVal class
 // ==========================================================================
 
+// DRNadler 17-Jan-2026: Replace CircValTypeDef macro with CircValType template.
+
 // LK   2-Jan-2026: Replace FP comparison (==) with std::equal_to to avoid triggering -Wfloat-equal
 
-// DRN 31-Jan-2025: For better portability, replace M_PI with C++ 2020 std::numbers::pi
+// DRNadler 31-Jan-2025: For better portability, replace M_PI with C++ 2020 std::numbers::pi
 
-// DRN 31-Jan-2025: To avoid multiple defines when this header is included from multiple C++ source files:
+// DRNadler 31-Jan-2025: To avoid multiple defines when this header is included from multiple C++ source files:
 // - static functions must be inline (compiler can decide whether or not to actually inline)
 // - CircValTypeDef macro must use static constexpr to force compile-time evaluation and no storage allocation
 
@@ -24,36 +26,39 @@
 #include "CircHelper.h"   // Mod
 
 // ==========================================================================
-// use this macro to define a circular-value type
-#define CircValTypeDef(_Name, _L, _H, _Z)                                \
-    struct _Name                                                         \
-    {                                                                    \
-        static constexpr double L   = (_L);          /* range: [L,H) */  \
-        static constexpr double H   = (_H);                              \
-        static constexpr double Z   = (_Z);          /* zero-value   */  \
-        static constexpr double R   = ((_H)-(_L));   /* range        */  \
-        static constexpr double R_2 = ((_H)-(_L))/2.;/* half range   */  \
-                                                                         \
-        static_assert((_H > _L) && (_Z >= _L) && (_Z <_H),               \
-            #_Name": Range not valid");                                  \
-    };
+// use this template to define a circular-value type
+template <double L_, double H_, double Z_>
+struct CircValType
+{
+    // Prevent instances (no default ctor, no ctors at all in practice)
+    CircValType() = delete;
 
-// ==========================================================================
+    static constexpr double L = L_;            // range: [L,H)
+    static constexpr double H = H_;
+    static constexpr double Z = Z_;            // zero-value
+    static constexpr double R = H_ - L_;       // range
+    static constexpr double R_2 = (H_ - L_) / 2.0; // half range
+
+    static_assert(H_ >  L_, "CircValType: invalid range (require H > L)");
+    static_assert(Z_ >= L_, "CircValType: invalid zero (require Z >= L)");
+    static_assert(Z_ <  H_, "CircValType: invalid zero (require Z < H)");
+};
+
 // define basic circular-value types
-CircValTypeDef(SignedDegRange  ,             -180.,               180.,  0. )
-CircValTypeDef(UnsignedDegRange,                0.,               360.,  0. )
-CircValTypeDef(SignedRadRange  , -std::numbers::pi,   std::numbers::pi,  0. )
-CircValTypeDef(UnsignedRadRange,                0., 2*std::numbers::pi,  0. )
+using   SignedDegRange = CircValType<           -180.0,                180.0, 0.0>;
+using UnsignedDegRange = CircValType<              0.0,                360.0, 0.0>;
+using   SignedRadRange = CircValType<-std::numbers::pi,     std::numbers::pi, 0.0>;
+using UnsignedRadRange = CircValType<              0.0, 2 * std::numbers::pi, 0.0>;
 
 // for testing only, define some additional circular-value types
-CircValTypeDef(TestRange0      ,                3.,                10.,  5.3)
-CircValTypeDef(TestRange1      ,               -3.,                10., -3.0)
-CircValTypeDef(TestRange2      ,               -3.,                10.,  9.9)
-CircValTypeDef(TestRange3      ,              -13.,                -3., -5.3)
+using TestRange0 = CircValType<  3.0, 10.0,  5.3>;
+using TestRange1 = CircValType< -3.0, 10.0, -3.0>;
+using TestRange2 = CircValType< -3.0, 10.0,  9.9>;
+using TestRange3 = CircValType<-13.0, -3.0, -5.3>;
 
 // ==========================================================================
 // circular value
-// Type should be defined using the CircValTypeDef macro
+// Type should be defined using the CircValType template
 template <typename Type>
 class CircVal
 {
