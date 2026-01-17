@@ -58,7 +58,7 @@ using TestRange3 = CircValType<-13.0, -3.0, -5.3>;
 
 // ==========================================================================
 // circular value
-// Type should be defined using the CircValTypeDef macro
+// Type should be defined using the CircValType template
 template <typename Type>
 class CircVal
 {
