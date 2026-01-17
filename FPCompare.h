@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <memory.h> // memcpy
+
 // ==========================================================================
 // Copyright 2005, Google Inc.
 // All rights reserved.
