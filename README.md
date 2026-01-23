@@ -1,6 +1,6 @@
 # Circular
 
-A C++11 library for circular values (angles, time-of-day, etc.) mathematics and statistics
+A C++20 library for mathematics and statistics on circular values, such as angles and time of day.
 
 Copyright © 2015 Lior Kogan (koganlior1 [at] gmail [dot] com)
 
@@ -9,23 +9,25 @@ Released under the Apache License, Version 2.0
 [Primary maintained copy](https://github.com/LiorKogan/Circular) <br>
 [Also at](https://github.com/DRNadler/Circular)
 
---
+### Overview
 
-Many scientific and engineering problems involve circular real numbers. These numbers usually represent angular measurements (e.g., azimuth) or cyclical timestamps (e.g., time of day), but may represent other circular quantities. Circular reals are very common in physics, geodesics, and navigation, but also appear in fields such as psychology and criminology (time-of-day statistics), bird-watching, and biology (directional statistics and time-of-year statistics).
+Many scientific and engineering problems involve circular real numbers - values defined on a cycle rather than a linear scale. Common examples include angular measurements (e.g., azimuth or heading) and cyclical timestamps (e.g., time of day). Circular values are prevalent in physics, geodesy, and navigation, but also appear in fields such as psychology and criminology (time-of-day statistics), biology and birdwatching (directional statistics), and seasonal analysis.
 
-The mathematics and statistics of circular reals are tricky and error-prone, both for simple operations such as addition and subtraction and for more complex operations such as average, median, parameter estimation, and interpolations. In addition, different ranges and zero-values are used. For angles, [-π,π), [0,2π), [-180,180), and [0,360) are often used, and for time-of-day, [0,24), [0,24∙60∙60) and other ranges.
+Working with circular values is subtle and error-prone due to the wrap-around property: when values exceed the range boundaries, they “loop back,” making ordinary arithmetic, comparisons, and statistics non-trivial. Even basic operations like addition and subtraction require care, while advanced tasks—such as averaging, median computation, parameter estimation, and interpolation—are especially tricky. The variety of commonly used ranges and zero conventions (e.g., [-π, π), [0, 2π), [-180°, 180°), [0°, 360°), [0, 24), [0, 24·60·60), etc.) further complicates calculations.
 
-Scope:
+This library provides a principled, well-documented foundation for working with circular real numbers robustly and expressively.
+
+### Scope:
 
 - Theoretical foundations (see documentation)
-- A class for storing and computing with circular reals
-- Operators: comparison, circular arithmetic, trigonometric
-- Conversion between different types of circular reals
-- Conversion between circular reals and reals
-- Statistical distributions: wrapped normal, truncated normal, wrapped truncated normal 
-- Circular average, weighted average, and median
-- Circular parameter estimation based on noisy measurements 
-- Interpolation and average estimation of a sampled continuous-time circular signal
+- A class for representing and computing with circular real values
+- Comparison, circular arithmetic, and trigonometric operators
+- Conversion between different circular domains and conventions
+- Conversion between circular and linear real values
+- Circular probability distributions: Wrapped normal, Truncated normal, Wrapped truncated normal
+- Average, weighted average, and median
+- Parameter estimation from noisy measurements
+- Interpolation and average estimation of sampled continuous-time circular signals
 
 [Description and documentation](https://github.com/LiorKogan/Circular/blob/main/Doc/Circular.pdf)
 
