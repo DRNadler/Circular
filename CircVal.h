@@ -221,7 +221,7 @@ class CircValTester
     }
 
     // assert that 2 circular-values are almost equal
-    inline static void AssertCircAlmostEq(const CircVal<Type>& c1, const CircVal<Type>& c2)
+    inline static void AssertCircAlmostEq([[maybe_unused]]const CircVal<Type>& c1, [[maybe_unused]]const CircVal<Type>& c2)
     {
         assert(IsCircAlmostEq(c1, c2));
     }

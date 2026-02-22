@@ -297,7 +297,7 @@ static bool IsAlmostEq(T x, T y)
 }
 
 // assert that 2 floating-points are almost equal
-[[maybe_unused]] static void AssertAlmostEq(const double f, const double g)
+[[maybe_unused]] static void AssertAlmostEq([[maybe_unused]]const double f, [[maybe_unused]]const double g)
 {
     assert(IsAlmostEq(f, g));
 }
